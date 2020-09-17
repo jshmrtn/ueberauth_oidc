@@ -52,8 +52,7 @@ defmodule Ueberauth.Strategy.OIDC do
       nil ->
         opts = get_options!(conn)
 
-        provider_id = get_provider(opts)
-        {:ok, ^provider_id} = :oidcc_session.get_provider(session)
+        {:ok, provider_id} = :oidcc_session.get_provider(session)
         {:ok, pkce} = :oidcc_session.get_pkce(session)
         {:ok, nonce} = :oidcc_session.get_nonce(session)
         {:ok, scope} = :oidcc_session.get_scopes(session)
