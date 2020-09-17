@@ -219,7 +219,16 @@ defmodule Ueberauth.Strategy.OIDC do
     all_opts = options(conn)
     supplied_defaults = Keyword.get(all_opts, :default, [])
 
-    provider_opts = Keyword.get(all_opts, session_provider_id, [])
+    provider_opts =
+      case is_atom(session_provider_id) do
+        true ->
+          Keyword.get(all_opts, session_provider_id, [])
+
+        false ->
+          Enum.find_value(all_opts, [], fn {key, val} ->
+            if session_provider_id == to_string(key), do: val
+          end)
+      end
     
     default_options()
     |> Keyword.merge(supplied_defaults)
