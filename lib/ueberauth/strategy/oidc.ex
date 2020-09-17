@@ -50,9 +50,10 @@ defmodule Ueberauth.Strategy.OIDC do
   defp handle_callback!(conn, session) do
     case conn.params["error"] do
       nil ->
-        opts = get_options!(conn)
-
         {:ok, provider_id} = :oidcc_session.get_provider(session)
+        
+        opts = get_options!(conn, provider_id)
+        
         {:ok, pkce} = :oidcc_session.get_pkce(session)
         {:ok, nonce} = :oidcc_session.get_nonce(session)
         {:ok, scope} = :oidcc_session.get_scopes(session)
@@ -188,7 +189,9 @@ defmodule Ueberauth.Strategy.OIDC do
 
   defp option(opts, key), do: Keyword.get(opts, key)
 
-  defp get_options!(conn) do
+  defp get_options!(conn, session_provider_id \\ nil)
+
+  defp get_options!(conn, nil) do
     all_opts = options(conn)
     supplied_defaults = Keyword.get(all_opts, :default, [])
 
@@ -210,6 +213,18 @@ defmodule Ueberauth.Strategy.OIDC do
     |> Keyword.merge(supplied_defaults)
     |> Keyword.merge(provider_opts)
     |> Keyword.put(:provider, to_string(provider_id))
+  end
+
+  defp get_options!(conn, session_provider_id) do
+    all_opts = options(conn)
+    supplied_defaults = Keyword.get(all_opts, :default, [])
+
+    provider_opts = Keyword.get(all_opts, session_provider_id, [])
+    
+    default_options()
+    |> Keyword.merge(supplied_defaults)
+    |> Keyword.merge(provider_opts)
+    |> Keyword.put(:provider, to_string(session_provider_id))
   end
 
   defp expires_at(nil), do: nil
