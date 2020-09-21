@@ -48,12 +48,12 @@ defmodule Ueberauth.Strategy.OIDC do
   end
 
   defp handle_callback!(conn, session) do
+    {:ok, provider_id} = :oidcc_session.get_provider(session)
+        
+    conn = put_private(conn, :ueberauth_oidc_name, provider_id)
+  
     case conn.params["error"] do
       nil ->
-        {:ok, provider_id} = :oidcc_session.get_provider(session)
-        
-        conn = put_private(conn, :ueberauth_oidc_name, provider_id)
-        
         opts = get_options!(conn, provider_id)
         
         {:ok, pkce} = :oidcc_session.get_pkce(session)
